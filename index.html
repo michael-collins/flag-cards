@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Flashcards</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌍 Flag Flashcards</h1>
+            <div class="stats">
+                <span>Card: <span id="current-card">1</span> / <span id="total-cards">0</span></span>
+                <span>Score: <span id="correct">0</span> / <span id="attempted">0</span></span>
+            </div>
+        </header>
+
+        <div class="flashcard-container">
+            <div class="flashcard" id="flashcard">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <div class="flag" id="flag">🏳️</div>
+                        <p class="hint">Click to reveal</p>
+                    </div>
+                    <div class="flashcard-back">
+                        <h2 id="country-name">Country Name</h2>
+                        <p id="country-info">Additional Info</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="prev-btn" class="btn">← Previous</button>
+            <button id="flip-btn" class="btn btn-primary">Flip Card</button>
+            <button id="next-btn" class="btn">Next →</button>
+        </div>
+
+        <div class="actions">
+            <button id="know-btn" class="btn btn-success">✓ I Know This</button>
+            <button id="dont-know-btn" class="btn btn-danger">✗ Don't Know</button>
+            <button id="shuffle-btn" class="btn btn-secondary">🔀 Shuffle</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
