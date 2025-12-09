@@ -9,6 +9,9 @@ let attemptedCount = 0;
 let currentDeck = [];
 let isLoading = true;
 
+// Constants
+const FLIP_ANIMATION_DURATION = 600; // milliseconds - must match CSS transition duration
+
 // DOM elements
 const flashcard = document.getElementById('flashcard');
 const flagElement = document.getElementById('flag');
@@ -132,16 +135,17 @@ function loadCard() {
     // before updating content to prevent the answer from flashing
     if (isFlipped) {
         flipCard();
-        // Wait for flip animation to complete (600ms) before updating content
+        // Wait for flip animation to complete before updating content
         setTimeout(() => {
             updateCardContent(country);
-        }, 600);
+            currentCardSpan.textContent = currentIndex + 1;
+            updateButtonStates();
+        }, FLIP_ANIMATION_DURATION);
     } else {
         updateCardContent(country);
+        currentCardSpan.textContent = currentIndex + 1;
+        updateButtonStates();
     }
-    
-    currentCardSpan.textContent = currentIndex + 1;
-    updateButtonStates();
 }
 
 // Update card content (separated to allow delayed updates)
