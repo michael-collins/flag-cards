@@ -1,53 +1,13 @@
-// Country flag data with flag emoji, name, and capital
-const countries = [
-    { flag: '🇺🇸', name: 'United States', capital: 'Washington, D.C.' },
-    { flag: '🇬🇧', name: 'United Kingdom', capital: 'London' },
-    { flag: '🇫🇷', name: 'France', capital: 'Paris' },
-    { flag: '🇩🇪', name: 'Germany', capital: 'Berlin' },
-    { flag: '🇮🇹', name: 'Italy', capital: 'Rome' },
-    { flag: '🇪🇸', name: 'Spain', capital: 'Madrid' },
-    { flag: '🇨🇦', name: 'Canada', capital: 'Ottawa' },
-    { flag: '🇯🇵', name: 'Japan', capital: 'Tokyo' },
-    { flag: '🇨🇳', name: 'China', capital: 'Beijing' },
-    { flag: '🇰🇷', name: 'South Korea', capital: 'Seoul' },
-    { flag: '🇮🇳', name: 'India', capital: 'New Delhi' },
-    { flag: '🇧🇷', name: 'Brazil', capital: 'Brasília' },
-    { flag: '🇲🇽', name: 'Mexico', capital: 'Mexico City' },
-    { flag: '🇦🇷', name: 'Argentina', capital: 'Buenos Aires' },
-    { flag: '🇦🇺', name: 'Australia', capital: 'Canberra' },
-    { flag: '🇷🇺', name: 'Russia', capital: 'Moscow' },
-    { flag: '🇿🇦', name: 'South Africa', capital: 'Pretoria' },
-    { flag: '🇪🇬', name: 'Egypt', capital: 'Cairo' },
-    { flag: '🇳🇬', name: 'Nigeria', capital: 'Abuja' },
-    { flag: '🇸🇪', name: 'Sweden', capital: 'Stockholm' },
-    { flag: '🇳🇴', name: 'Norway', capital: 'Oslo' },
-    { flag: '🇫🇮', name: 'Finland', capital: 'Helsinki' },
-    { flag: '🇩🇰', name: 'Denmark', capital: 'Copenhagen' },
-    { flag: '🇳🇱', name: 'Netherlands', capital: 'Amsterdam' },
-    { flag: '🇧🇪', name: 'Belgium', capital: 'Brussels' },
-    { flag: '🇨🇭', name: 'Switzerland', capital: 'Bern' },
-    { flag: '🇦🇹', name: 'Austria', capital: 'Vienna' },
-    { flag: '🇵🇱', name: 'Poland', capital: 'Warsaw' },
-    { flag: '🇬🇷', name: 'Greece', capital: 'Athens' },
-    { flag: '🇵🇹', name: 'Portugal', capital: 'Lisbon' },
-    { flag: '🇹🇷', name: 'Turkey', capital: 'Ankara' },
-    { flag: '🇸🇦', name: 'Saudi Arabia', capital: 'Riyadh' },
-    { flag: '🇦🇪', name: 'United Arab Emirates', capital: 'Abu Dhabi' },
-    { flag: '🇮🇱', name: 'Israel', capital: 'Jerusalem' },
-    { flag: '🇹🇭', name: 'Thailand', capital: 'Bangkok' },
-    { flag: '🇻🇳', name: 'Vietnam', capital: 'Hanoi' },
-    { flag: '🇸🇬', name: 'Singapore', capital: 'Singapore' },
-    { flag: '🇵🇭', name: 'Philippines', capital: 'Manila' },
-    { flag: '🇮🇩', name: 'Indonesia', capital: 'Jakarta' },
-    { flag: '🇲🇾', name: 'Malaysia', capital: 'Kuala Lumpur' },
-];
+// Country flag data - will be loaded from API
+let countries = [];
 
 // App state
 let currentIndex = 0;
 let isFlipped = false;
 let correctCount = 0;
 let attemptedCount = 0;
-let currentDeck = [...countries];
+let currentDeck = [];
+let isLoading = true;
 
 // DOM elements
 const flashcard = document.getElementById('flashcard');
@@ -66,6 +26,95 @@ const knowBtn = document.getElementById('know-btn');
 const dontKnowBtn = document.getElementById('dont-know-btn');
 const shuffleBtn = document.getElementById('shuffle-btn');
 
+// Fetch countries data from REST Countries API
+async function fetchCountries() {
+    try {
+        showLoading(true);
+        // Use CORS proxy for better compatibility
+        const response = await fetch('https://restcountries.com/v3.1/all');
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch countries');
+        }
+        
+        const data = await response.json();
+        
+        // Transform the data to our format
+        countries = data
+            .map(country => ({
+                name: country.name.common,
+                capital: country.capital ? country.capital[0] : 'N/A',
+                region: country.region || 'Unknown',
+                subregion: country.subregion || '',
+                population: country.population || 0,
+                flag: country.flags.svg,
+                cca2: country.cca2.toLowerCase()
+            }))
+            .filter(country => country.name && country.flag)
+            .sort((a, b) => a.name.localeCompare(b.name));
+        
+        currentDeck = [...countries];
+        isLoading = false;
+        showLoading(false);
+        init();
+    } catch (error) {
+        console.error('Error fetching countries:', error);
+        // Fallback to loading from local data file
+        loadLocalCountries();
+    }
+}
+
+// Fallback to load countries from local JSON file
+async function loadLocalCountries() {
+    try {
+        const response = await fetch('countries.json');
+        const data = await response.json();
+        countries = data.sort((a, b) => a.name.localeCompare(b.name));
+        currentDeck = [...countries];
+        isLoading = false;
+        showLoading(false);
+        init();
+    } catch (error) {
+        console.error('Error loading local countries:', error);
+        showError();
+    }
+}
+
+// Show/hide loading state
+function showLoading(show) {
+    const loadingEl = document.getElementById('loading');
+    const contentEl = document.querySelector('.flashcard-container');
+    const controlsEl = document.querySelector('.controls');
+    const actionsEl = document.querySelector('.actions');
+    
+    if (loadingEl) {
+        loadingEl.style.display = show ? 'block' : 'none';
+    }
+    if (contentEl) {
+        contentEl.style.display = show ? 'none' : 'block';
+    }
+    if (controlsEl) {
+        controlsEl.style.display = show ? 'none' : 'flex';
+    }
+    if (actionsEl) {
+        actionsEl.style.display = show ? 'none' : 'flex';
+    }
+}
+
+// Show error message
+function showError() {
+    const flashcardInner = document.querySelector('.flashcard-inner');
+    if (flashcardInner) {
+        flashcardInner.innerHTML = `
+            <div class="error-message">
+                <h2>Failed to Load Countries</h2>
+                <p>Please check your internet connection and refresh the page.</p>
+                <button onclick="location.reload()" class="btn btn-primary">Retry</button>
+            </div>
+        `;
+    }
+}
+
 // Initialize the app
 function init() {
     totalCardsSpan.textContent = currentDeck.length;
@@ -75,10 +124,27 @@ function init() {
 
 // Load current card
 function loadCard() {
+    if (currentDeck.length === 0) return;
+    
     const country = currentDeck[currentIndex];
-    flagElement.textContent = country.flag;
+    
+    // Update flag with flag-icons CSS class
+    flagElement.innerHTML = `<span class="fi fi-${country.cca2} flag-icon-large"></span>`;
+    
     countryName.textContent = country.name;
-    countryInfo.textContent = `Capital: ${country.capital}`;
+    
+    // Enhanced country info
+    let info = `Capital: ${country.capital}`;
+    if (country.region) {
+        info += `<br>Region: ${country.region}`;
+        if (country.subregion) {
+            info += ` (${country.subregion})`;
+        }
+    }
+    if (country.population) {
+        info += `<br>Population: ${country.population.toLocaleString()}`;
+    }
+    countryInfo.innerHTML = info;
     
     // Reset flip state
     if (isFlipped) {
@@ -208,4 +274,4 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Start the app
-init();
+fetchCountries();
