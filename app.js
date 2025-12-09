@@ -9,6 +9,9 @@ let attemptedCount = 0;
 let currentDeck = [];
 let isLoading = true;
 
+// Constants
+const FLIP_ANIMATION_DURATION = 600; // milliseconds - must match CSS transition duration
+
 // DOM elements
 const flashcard = document.getElementById('flashcard');
 const flagElement = document.getElementById('flag');
@@ -128,6 +131,25 @@ function loadCard() {
     
     const country = currentDeck[currentIndex];
     
+    // If card is flipped, flip it back first and wait for animation to complete
+    // before updating content to prevent the answer from flashing
+    if (isFlipped) {
+        flipCard();
+        // Wait for flip animation to complete before updating content
+        setTimeout(() => {
+            updateCardContent(country);
+            currentCardSpan.textContent = currentIndex + 1;
+            updateButtonStates();
+        }, FLIP_ANIMATION_DURATION);
+    } else {
+        updateCardContent(country);
+        currentCardSpan.textContent = currentIndex + 1;
+        updateButtonStates();
+    }
+}
+
+// Update card content (separated to allow delayed updates)
+function updateCardContent(country) {
     // Update flag with flag-icons CSS class
     flagElement.innerHTML = `<span class="fi fi-${country.cca2} flag-icon-large"></span>`;
     
@@ -145,14 +167,6 @@ function loadCard() {
         info += `<br>Population: ${country.population.toLocaleString()}`;
     }
     countryInfo.innerHTML = info;
-    
-    // Reset flip state
-    if (isFlipped) {
-        flipCard();
-    }
-    
-    currentCardSpan.textContent = currentIndex + 1;
-    updateButtonStates();
 }
 
 // Flip card
