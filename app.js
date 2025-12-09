@@ -177,6 +177,12 @@ shuffleBtn.addEventListener('click', shuffleDeck);
 
 // Keyboard navigation
 document.addEventListener('keydown', (e) => {
+    // Don't interfere with keyboard navigation on buttons or inputs
+    const activeElement = document.activeElement;
+    const isInteractiveElement = activeElement.tagName === 'BUTTON' || 
+                                  activeElement.tagName === 'INPUT' || 
+                                  activeElement.tagName === 'SELECT';
+    
     switch(e.key) {
         case 'ArrowLeft':
             previousCard();
@@ -186,8 +192,11 @@ document.addEventListener('keydown', (e) => {
             break;
         case ' ':
         case 'Enter':
-            e.preventDefault();
-            flipCard();
+            // Only prevent default when not on interactive elements
+            if (!isInteractiveElement) {
+                e.preventDefault();
+                flipCard();
+            }
             break;
         case '1':
             markAsKnown();
