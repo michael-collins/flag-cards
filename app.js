@@ -128,6 +128,24 @@ function loadCard() {
     
     const country = currentDeck[currentIndex];
     
+    // If card is flipped, flip it back first and wait for animation to complete
+    // before updating content to prevent the answer from flashing
+    if (isFlipped) {
+        flipCard();
+        // Wait for flip animation to complete (600ms) before updating content
+        setTimeout(() => {
+            updateCardContent(country);
+        }, 600);
+    } else {
+        updateCardContent(country);
+    }
+    
+    currentCardSpan.textContent = currentIndex + 1;
+    updateButtonStates();
+}
+
+// Update card content (separated to allow delayed updates)
+function updateCardContent(country) {
     // Update flag with flag-icons CSS class
     flagElement.innerHTML = `<span class="fi fi-${country.cca2} flag-icon-large"></span>`;
     
@@ -145,14 +163,6 @@ function loadCard() {
         info += `<br>Population: ${country.population.toLocaleString()}`;
     }
     countryInfo.innerHTML = info;
-    
-    // Reset flip state
-    if (isFlipped) {
-        flipCard();
-    }
-    
-    currentCardSpan.textContent = currentIndex + 1;
-    updateButtonStates();
 }
 
 // Flip card
